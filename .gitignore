@@ -1,0 +1,5 @@
+/data
+/image_cache
+spotipy.log
+.venv
+/ctk_components/

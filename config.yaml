@@ -1,0 +1,17 @@
+api:
+  client_id: 175a462d8506489ca7b0c63e1bc14680
+  client_secret: dcfa39f9d1df479ea26413c5a420f0f1
+  access_token_url: https://accounts.spotify.com/api/token
+  auth_url: https://accounts.spotify.com/authorize
+  redirect_uri: http://localhost:3000
+
+  endpoints:
+    users:
+      current_user_profile: https://api.spotify.com/v1/me
+      user_top_item_artists: https://api.spotify.com/v1/me/top/artists
+      user_top_item_tracks: https://api.spotify.com/v1/me/top/tracks
+      current_user_playlists: https://api.spotify.com/v1/me/playlists
+    artist:
+      get_albums: https://api.spotify.com/v1/artists/{}/albums
+      top_tracks: https://api.spotify.com/v1/artists/{}/top-tracks
+      related_artists: https://api.spotify.com/v1/artists/{}/related-artists
