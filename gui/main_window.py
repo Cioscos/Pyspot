@@ -4,14 +4,12 @@ from typing import Optional, Any
 import customtkinter as ctk
 
 from gui.ArtistPageContent import ArtistPageContent
-from gui.ProfilePageContent import ProfilePageContent
 from gui.HomePageContent import HomePageContent
-from gui.ArtistsPageContent import ArtistsPageContent
+from gui.ProfilePageContent import ProfilePageContent
+from gui.header_bar import HeaderBar
 from service.config_reader import ConfigReader
 from service.spotify_client import SpotifyClient
-from gui.header_bar import HeaderBar
 from utiity.image_cache import ImageCache
-
 
 logger = logging.getLogger(__name__)
 
@@ -84,46 +82,61 @@ class UiMainWindow(ctk.CTk):
         """
         base_content_type = content_type_identifier.split(':')[0]  # Extract the base content type
 
-        if hasattr(self, 'current_content') and self.current_content is not None:
-            self.current_content.clear()
-            self.current_content.hide()
+        # Check if current content exists and matches the requested type
+        if hasattr(self, 'current_content') and isinstance(self.current_content,
+                                                           self._get_content_class(base_content_type)):
+            # Update the current content with new data instead of recreating it
+            self.current_content.update_ui_with_new_data(data)
+        else:
+            # Clear the old content if it exists
+            if hasattr(self, 'current_content') and self.current_content is not None:
+                self.current_content.clear()
+                self.current_content.hide()
 
-        if not self.page_history or (self.page_history[-1][0] != content_type_identifier):
-            self.page_history.append((content_type_identifier, data))
-            self.forward_history.clear()
+            if not self.page_history or (self.page_history[-1][0] != content_type_identifier):
+                self.page_history.append((content_type_identifier, data))
+                self.forward_history.clear()
 
-        # Instantiate and render the appropriate content object
-        if base_content_type == "Home":
-            self.current_content = HomePageContent(self.content_frame)
-        elif base_content_type == "Profile":
-            self.current_content = ProfilePageContent(self.content_frame,
-                                                      self.sp_client,
-                                                      self.config,
-                                                      self.current_profile,
-                                                      self.image_cache,
-                                                      navigate_callback=self.update_content
-                                                      )
-        elif base_content_type == "Artists":
-            self.current_content = ArtistsPageContent(self.content_frame)
-        elif base_content_type == "Artist":
-            self.current_content = ArtistPageContent(self.content_frame,
-                                                     self.sp_client,
-                                                     self.config,
-                                                     self.current_profile,
-                                                     self.image_cache,
-                                                     navigate_callback=self.update_content,
-                                                     data=data
-                                                     )
+            # Instantiate and render the appropriate content object
+            if base_content_type == "Home":
+                self.current_content = HomePageContent(self.content_frame)
+            elif base_content_type == "Profile":
+                self.current_content = ProfilePageContent(self.content_frame,
+                                                          self.sp_client,
+                                                          self.config,
+                                                          self.current_profile,
+                                                          self.image_cache,
+                                                          navigate_callback=self.update_content,
+                                                          data=data
+                                                          )
+            elif base_content_type == "Artist":
+                self.current_content = ArtistPageContent(self.content_frame,
+                                                         self.sp_client,
+                                                         self.config,
+                                                         self.current_profile,
+                                                         self.image_cache,
+                                                         navigate_callback=self.update_content,
+                                                         data=data
+                                                         )
 
-        self.current_content.load_and_display()
+            self.current_content.load_and_display()
+
+    def _get_content_class(self, base_content_type):
+        """
+        Returns the class associated with the base content type.
+        """
+        content_classes = {
+            "Home": HomePageContent,
+            "Profile": ProfilePageContent,
+            "Artist": ArtistPageContent
+        }
+        return content_classes.get(base_content_type)
 
     def on_header_button_click(self, txt: str):
         print(f"Header button clicked: {txt}")
         # Determine the content type based on the button text
         if txt == "Home":
             self.update_content("Home")
-        elif txt == "Artists":
-            self.update_content("Artists")
         elif txt == "Profile":
             self.update_content("Profile")
 
