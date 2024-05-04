@@ -1,6 +1,6 @@
 import threading
 from abc import ABC, abstractmethod
-from typing import Callable
+from typing import Callable, Optional, Any
 
 import customtkinter as ctk
 
@@ -12,12 +12,14 @@ class Content(ABC):
     Abstract base class for all content types in the application.
     Each content class should provide an implementation for initializing and rendering its content.
     """
-    def __init__(self, master, navigate_callback: Callable):
+
+    def __init__(self, master, navigate_callback: Callable, data: Optional[Any] = None):
         self.master = master
         self.navigate_callback = navigate_callback
+        self.data = data
         self.frame = ctk.CTkFrame(master)
         self.frame.pack(fill='both', expand=True)
-        self.loading_indicator = CTkLoader(master=self.frame, opacity=0.8, width=40, height=40)
+        self.loading_indicator = CTkLoader(master=master, opacity=0.8, width=40, height=40)
         self.loading_indicator.place(relx=0.5, rely=0.5, anchor='center')
 
     def show_loading_indicator(self):
@@ -43,6 +45,14 @@ class Content(ABC):
     def finish_loading(self):
         self.render()
         self.hide_loading_indicator()
+
+    @abstractmethod
+    def update_ui_with_new_data(self, data):
+        """
+        Generic method to update the UI with new data. Can be overridden by subclasses if needed.
+        """
+        # Assuming every content type would need to do these:
+        self.data = data
 
     @abstractmethod
     def load_data(self):

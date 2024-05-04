@@ -1,4 +1,5 @@
 from typing import Dict, Any, Optional, List, Callable
+
 import customtkinter as ctk
 
 from gui.content import Content
@@ -19,16 +20,15 @@ class ArtistPageContent(Content):
                  config: ConfigReader,
                  current_profile: Dict[str, Any],
                  image_cache: ImageCache,
-                 data: Any,
+                 data: Optional[Any] = None,
                  navigate_callback: Optional[Callable] = None,
                  ):
-        super().__init__(master, navigate_callback)
+        super().__init__(master, navigate_callback, data)
 
         self.sp_client = spotify_client
         self.config = config
         self.current_profile = current_profile
         self.image_cache = image_cache
-        self.artist_data = data
 
         self.albums: List[Dict[str, Any]] = []
         self.singles: List[Dict[str, Any]] = []
@@ -36,32 +36,37 @@ class ArtistPageContent(Content):
         self.top_tracks: List[Dict[str, Any]] = []
         self.related_artists: List[Dict[str, Any]] = []
 
+    def update_ui_with_new_data(self, data):
+        super().update_ui_with_new_data(data)
+
+        # TODO: Add implementation
+
     def load_data(self):
         self._fetch_data()
 
     def _fetch_data(self):
         # Perform all data fetching operations
         self.albums = self.sp_client.get(
-            self.config.get_config_value('api.endpoints.artist.get_albums').format(self.artist_data['id']),
+            self.config.get_config_value('api.endpoints.artist.get_albums').format(self.data['id']),
             params={'include_groups': 'album', 'limit': 9}
         )['items']
 
         self.singles = self.sp_client.get(
-            self.config.get_config_value('api.endpoints.artist.get_albums').format(self.artist_data['id']),
+            self.config.get_config_value('api.endpoints.artist.get_albums').format(self.data['id']),
             params={'include_groups': 'single', 'limit': 9}
         )['items']
 
         self.appears_on = self.sp_client.get(
-            self.config.get_config_value('api.endpoints.artist.get_albums').format(self.artist_data['id']),
+            self.config.get_config_value('api.endpoints.artist.get_albums').format(self.data['id']),
             params={'include_groups': 'appears_on', 'limit': 9}
         )['items']
 
         self.top_tracks = self.sp_client.get(
-            self.config.get_config_value('api.endpoints.artist.top_tracks').format(self.artist_data['id'])
+            self.config.get_config_value('api.endpoints.artist.top_tracks').format(self.data['id'])
         )['tracks']
 
         self.related_artists = self.sp_client.get(
-            self.config.get_config_value('api.endpoints.artist.related_artists').format(self.artist_data['id'])
+            self.config.get_config_value('api.endpoints.artist.related_artists').format(self.data['id'])
         )['artists']
 
     def render(self):
@@ -70,8 +75,8 @@ class ArtistPageContent(Content):
         self.left_frame.pack(side='left', fill='y', padx=(20, 10), pady=20)
 
         # artist profile image
-        if 'images' in self.artist_data and self.artist_data['images']:
-            largest_image = max(self.artist_data['images'], key=lambda image: image["width"] * image["height"])
+        if 'images' in self.data and self.data['images']:
+            largest_image = max(self.data['images'], key=lambda image: image["width"] * image["height"])
             image_url = largest_image["url"]
             profile_image = self.image_cache.fetch_image(image_url)
             profile_image = create_rounded_image(profile_image, (largest_image["width"], largest_image["height"]))
@@ -84,11 +89,11 @@ class ArtistPageContent(Content):
         # Profile info components
         ProfileInfoComponent(self.left_frame,
                              "Followers",
-                             self.artist_data.get("followers").get("total", 'N/A'),
+                             self.data.get("followers").get("total", 'N/A'),
                              ).pack(fill='x', pady=2, padx=5)
         ProfileInfoComponent(self.left_frame,
                              "Genres:",
-                             ', '.join(self.artist_data.get("genres", "N/A"))
+                             ', '.join(self.data.get("genres", "N/A"))
                              ).pack(fill='x', pady=2, padx=5)
 
         # Right columns - Artist albums and tracks
@@ -96,7 +101,7 @@ class ArtistPageContent(Content):
         self.right_frame.pack(side='right', fill='both', expand=True, padx=20, pady=20)
 
         ctk.CTkLabel(self.right_frame,
-                     text=self.artist_data['name'],
+                     text=self.data['name'],
                      font=ctk.CTkFont(family='Helvetica', size=40, weight='bold')
                      ).pack(fill='x', pady=10, padx=5)
 

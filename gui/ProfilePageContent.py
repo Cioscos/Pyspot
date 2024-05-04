@@ -1,15 +1,16 @@
 from typing import Dict, Any, Optional, List, Callable
+
 import customtkinter as ctk
 
+from gui.labeled_artist_cards_frame import LabeledArtistCardsFrame
+from gui.labeled_playlist_cards_frame import LabeledPlaylistCardsFrame
+from gui.labeled_track_list_frame import LabeledTrackListFrame
+from gui.profile_info_component import ProfileInfoComponent
 from service.config_reader import ConfigReader
 from service.spotify_client import SpotifyClient
 from utiity.image_cache import ImageCache
-from .content import Content
 from utiity.image_processing import create_rounded_image
-from gui.labeled_artist_cards_frame import LabeledArtistCardsFrame
-from gui.labeled_track_list_frame import LabeledTrackListFrame
-from gui.profile_info_component import ProfileInfoComponent
-from gui.labeled_playlist_cards_frame import LabeledPlaylistCardsFrame
+from .content import Content
 
 
 class ProfilePageContent(Content):
@@ -19,8 +20,9 @@ class ProfilePageContent(Content):
                  config: ConfigReader,
                  current_profile: Dict[str, Any],
                  image_cache: ImageCache,
-                 navigate_callback: Callable = None):
-        super().__init__(master, navigate_callback)
+                 navigate_callback: Callable = None,
+                 data: Optional[Any] = None):
+        super().__init__(master, navigate_callback, data)
 
         self.sp_client = spotify_client
         self.config = config
@@ -35,6 +37,9 @@ class ProfilePageContent(Content):
         # Initialize frame variables
         self.left_frame = None
         self.right_frame = None
+
+    def update_ui_with_new_data(self, data):
+        pass
 
     def load_data(self):
         self._fetch_data()
