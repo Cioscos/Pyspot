@@ -14,6 +14,8 @@ from utiity.image_processing import create_rounded_image
 
 
 class ArtistPageContent(Content):
+    PROFILE_IMAGE_SIZE = (400, 400)
+
     def __init__(self,
                  master: ctk.CTkFrame,
                  spotify_client: SpotifyClient,
@@ -36,10 +38,34 @@ class ArtistPageContent(Content):
         self.top_tracks: List[Dict[str, Any]] = []
         self.related_artists: List[Dict[str, Any]] = []
 
+        # Frames
+        self.scroll_frame = None
+        self.artist_name_label = None
+        self.genres_label = None
+        self.right_frame = None
+        self.followers_label = None
+        self.profile_image_label = None
+        self.left_frame = None
+
     def update_ui_with_new_data(self, data):
         super().update_ui_with_new_data(data)
 
-        # TODO: Add implementation
+        # Update profile image
+        largest_image = max(self.data['images'], key=lambda img: img["width"] * img["height"])
+        image_url = largest_image["url"]
+        profile_image = self.image_cache.fetch_image(image_url)
+        profile_image = create_rounded_image(profile_image, self.PROFILE_IMAGE_SIZE)
+        ctk_image = ctk.CTkImage(light_image=profile_image, dark_image=profile_image,
+                                 size=self.PROFILE_IMAGE_SIZE)
+        self.profile_image_label.configure(image=ctk_image)
+        self.profile_image_label.image = ctk_image  # Keep a reference to avoid garbage collection
+
+        # Update artist name
+        self.artist_name_label.configure(text=self.data['name'])
+
+        # Update followers and genres
+        self.followers_label.update_text("Followers", str(self.data.get("followers", {}).get("total", 'N/A')))
+        self.genres_label.update_text("Genres:", ', '.join(self.data.get("genres", [])))
 
     def load_data(self):
         self._fetch_data()
@@ -69,55 +95,57 @@ class ArtistPageContent(Content):
             self.config.get_config_value('api.endpoints.artist.related_artists').format(self.data['id'])
         )['artists']
 
-    def render(self):
+    def setup_ui(self):
         # Left Column - Profile Image and Artist Details
         self.left_frame = ctk.CTkFrame(self.frame)
         self.left_frame.pack(side='left', fill='y', padx=(20, 10), pady=20)
-
-        # artist profile image
-        if 'images' in self.data and self.data['images']:
-            largest_image = max(self.data['images'], key=lambda image: image["width"] * image["height"])
-            image_url = largest_image["url"]
-            profile_image = self.image_cache.fetch_image(image_url)
-            profile_image = create_rounded_image(profile_image, (largest_image["width"], largest_image["height"]))
-            ctk_image = ctk.CTkImage(light_image=profile_image, dark_image=profile_image,
-                                     size=(largest_image["width"], largest_image["height"]))
-            profile_image_label = ctk.CTkLabel(self.left_frame, image=ctk_image, text='')
-            profile_image_label.image = ctk_image
-            profile_image_label.pack(padx=10, pady=10)
+        self.profile_image_label = ctk.CTkLabel(self.left_frame, text='')
+        self.profile_image_label.pack(padx=10, pady=10)
 
         # Profile info components
-        ProfileInfoComponent(self.left_frame,
-                             "Followers",
-                             self.data.get("followers").get("total", 'N/A'),
-                             ).pack(fill='x', pady=2, padx=5)
-        ProfileInfoComponent(self.left_frame,
-                             "Genres:",
-                             ', '.join(self.data.get("genres", "N/A"))
-                             ).pack(fill='x', pady=2, padx=5)
+        self.followers_label = ProfileInfoComponent(self.left_frame, "Followers", "")
+        self.followers_label.pack(fill='x', pady=2, padx=5)
+
+        self.genres_label = ProfileInfoComponent(self.left_frame, "Genres:", "")
+        self.genres_label.pack(fill='x', pady=2, padx=5)
 
         # Right columns - Artist albums and tracks
         self.right_frame = ctk.CTkFrame(self.frame)
         self.right_frame.pack(side='right', fill='both', expand=True, padx=20, pady=20)
 
-        ctk.CTkLabel(self.right_frame,
-                     text=self.data['name'],
-                     font=ctk.CTkFont(family='Helvetica', size=40, weight='bold')
-                     ).pack(fill='x', pady=10, padx=5)
+        self.artist_name_label = ctk.CTkLabel(self.right_frame,
+                                              font=ctk.CTkFont(family='Helvetica', size=40, weight='bold'))
+        self.artist_name_label.pack(fill='x', pady=10, padx=5)
 
         # Scrollable Frame for Top Artists and Tracks
-        scroll_frame = ctk.CTkScrollableFrame(self.right_frame)
-        scroll_frame.pack(fill='both', expand=True)
+        self.scroll_frame = ctk.CTkScrollableFrame(self.right_frame)
+        self.scroll_frame.pack(fill='both', expand=True)
+
+    def render(self):
+        # artist profile image
+        if 'images' in self.data and self.data['images']:
+            largest_image = max(self.data['images'], key=lambda image: image["width"] * image["height"])
+            image_url = largest_image["url"]
+            profile_image = self.image_cache.fetch_image(image_url)
+            profile_image = create_rounded_image(profile_image, self.PROFILE_IMAGE_SIZE)
+            ctk_image = ctk.CTkImage(light_image=profile_image, dark_image=profile_image,
+                                     size=self.PROFILE_IMAGE_SIZE)
+            self.profile_image_label.configure(image=ctk_image)
+
+        self.followers_label.update_text(self.data.get("followers").get("total", 'N/A'))
+        self.genres_label.update_text(self.data.get("genres", "N/A"))
+
+        self.artist_name_label.configure(text=self.data['name'])
 
         # Top tracks
-        LabeledTrackListFrame(scroll_frame,
+        LabeledTrackListFrame(self.scroll_frame,
                               title='The top tracks!',
                               track_data=self.top_tracks
                               ).pack(fill='both', expand=True, pady=10)
 
         # Albums
         if self.albums:
-            LabeledPlaylistCardsFrame(scroll_frame,
+            LabeledPlaylistCardsFrame(self.scroll_frame,
                                       title='Album',
                                       data=self.albums,
                                       size=(200, 250),
@@ -127,7 +155,7 @@ class ArtistPageContent(Content):
 
         # Singles
         if self.singles:
-            LabeledPlaylistCardsFrame(scroll_frame,
+            LabeledPlaylistCardsFrame(self.scroll_frame,
                                       title='Singles and EP',
                                       data=self.singles,
                                       size=(200, 250),
@@ -137,7 +165,7 @@ class ArtistPageContent(Content):
 
         # Appears on
         if self.appears_on:
-            LabeledPlaylistCardsFrame(scroll_frame,
+            LabeledPlaylistCardsFrame(self.scroll_frame,
                                       title='Appears on',
                                       data=self.appears_on,
                                       size=(200, 250),
@@ -147,7 +175,7 @@ class ArtistPageContent(Content):
 
         # Related artists
         if self.related_artists:
-            LabeledArtistCardsFrame(scroll_frame,
+            LabeledArtistCardsFrame(self.scroll_frame,
                                     title='The top artists of this month',
                                     data=self.related_artists,
                                     size=(100, 150),

@@ -43,8 +43,9 @@ class Content(ABC):
         threading.Thread(target=async_load).start()
 
     def finish_loading(self):
-        self.render()
+        self.setup_ui()
         self.hide_loading_indicator()
+        self.render()
 
     @abstractmethod
     def update_ui_with_new_data(self, data):
@@ -57,6 +58,10 @@ class Content(ABC):
     @abstractmethod
     def load_data(self):
         """ Method to load data required for the content. """
+        pass
+
+    @abstractmethod
+    def setup_ui(self):
         pass
 
     @abstractmethod

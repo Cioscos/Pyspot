@@ -15,6 +15,9 @@ class HomePageContent(Content):
     def update_ui_with_new_data(self, data):
         pass
 
+    def setup_ui(self):
+        pass
+
     def load_data(self):
         return
 

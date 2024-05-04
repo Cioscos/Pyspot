@@ -1,6 +1,5 @@
-from datetime import time
-
 import customtkinter as ctk
+
 from utiity.image_cache import ImageCache
 
 
@@ -119,57 +118,6 @@ class LabeledTrackListFrame(ctk.CTkFrame):
         label = ctk.CTkLabel(frame, text=self._convert_ms_in_timeformat(track['duration_ms']), font=('Arial', 10))
         label.place(relx=0.5, rely=0.5, anchor="center")
         return frame
-    # def create_track_row(self, index, track):
-    #     row_frame = ctk.CTkFrame(self.tracks_frame, corner_radius=5)
-    #     row_frame.grid(row=index - 1, column=0, columnspan=5, padx=5, pady=2, sticky="ew")
-    #     for col in range(5):
-    #         row_frame.grid_columnconfigure(col, weight=1)
-    #
-    #     # Progressive Number
-    #     index_frame = ctk.CTkFrame(row_frame, width=50, height=30,
-    #                                corner_radius=0)  # Fixed size container for the index
-    #     index_frame.grid_propagate(False)  # Prevents the frame from resizing to fit its content
-    #     index_frame.grid(row=0, column=0, sticky="ew")
-    #     index_label = ctk.CTkLabel(index_frame, text=str(index), font=('Arial', 10))
-    #     index_label.place(relx=0.5, rely=0.5, anchor="center")  # Center the label within the fixed size frame
-    #
-    #     # Track Image
-    #     image_data = track['album']["images"][1]
-    #     image_frame = ctk.CTkFrame(row_frame, width=80, height=80, corner_radius=5)  # Adjusted for image size
-    #     image_frame.grid_propagate(False)
-    #     image_frame.grid(row=0, column=1, sticky="ew", padx=5)
-    #
-    #     track_image = self.image_cache.fetch_image(image_data['url'])
-    #     ctk_image = ctk.CTkImage(light_image=track_image,
-    #                              dark_image=track_image,
-    #                              size=(100, 100)
-    #                              )
-    #     image_label = ctk.CTkLabel(image_frame, image=ctk_image, text='')
-    #     image_label.place(relwidth=1, relheight=1)  # Make the label fill the fixed size frame
-    #
-    #     # Track Info
-    #     info_frame = ctk.CTkFrame(row_frame, width=200, height=30, corner_radius=0)  # Adjust width as needed
-    #     info_frame.grid_propagate(False)
-    #     info_frame.grid(row=0, column=2, sticky="ew", padx=5)
-    #     track_info_label = ctk.CTkLabel(info_frame,
-    #                                     text=f"{track['name']}\n{', '.join(artist['name'] for artist in track['artists'])}",
-    #                                     font=('Arial', 10))
-    #     track_info_label.place(relx=0.5, rely=0.5, anchor="center")
-    #
-    #     # Album Name
-    #     album_frame = ctk.CTkFrame(row_frame, width=200, height=30, corner_radius=0)  # Adjust width as needed
-    #     album_frame.grid_propagate(False)
-    #     album_frame.grid(row=0, column=3, sticky="ew", padx=5)
-    #     album_label = ctk.CTkLabel(album_frame, text=track['album']['name'], font=('Arial', 10))
-    #     album_label.place(relx=0.5, rely=0.5, anchor="center")
-    #
-    #     # Track Length
-    #     length_frame = ctk.CTkFrame(row_frame, width=100, height=30, corner_radius=0)  # Adjust width as needed
-    #     length_frame.grid_propagate(False)
-    #     length_frame.grid(row=0, column=4, sticky="ew", padx=5)
-    #     length_label = ctk.CTkLabel(length_frame, text=self._convert_ms_in_timeformat(track['duration_ms']),
-    #                                 font=('Arial', 10))
-    #     length_label.place(relx=0.5, rely=0.5, anchor="center")
 
     @staticmethod
     def _convert_ms_in_timeformat(ms):

@@ -14,12 +14,16 @@ class ProfileInfoComponent(ctk.CTkFrame):
         super().__init__(master, **kwargs)
         self.label_text = label_text
         self.value_text = value_text
-        self.init_ui()
+        self.value_label = None
+        self._init_ui()
 
-    def init_ui(self):
+    def _init_ui(self):
         """Initializes the UI components of the ProfileInfoComponent."""
         label = ctk.CTkLabel(self, text=self.label_text, anchor="w", font=('Arial', 15, 'bold'))
         label.pack(fill='x', padx=10, pady=(5, 0))
 
-        value = ctk.CTkLabel(self, text=self.value_text, anchor="w", font=('Arial', 12))
-        value.pack(fill='x', padx=10, pady=(0, 5))
+        self.value_label = ctk.CTkLabel(self, text=self.value_text, anchor="w", font=('Arial', 12))
+        self.value_label.pack(fill='x', padx=10, pady=(0, 5))
+
+    def update_text(self, text: str) -> None:
+        self.value_label.configure(text=text)

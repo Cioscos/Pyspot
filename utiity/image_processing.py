@@ -1,8 +1,9 @@
+from typing import Tuple
+
 from PIL import Image, ImageDraw, ImageOps
-from PIL.Image import Resampling
 
 
-def create_rounded_image(image, size=(100, 100)):
+def create_rounded_image(image, size: Tuple[int, int] = (100, 100)):
     """
     Creates a rounded (circular) image from the given image path.
 

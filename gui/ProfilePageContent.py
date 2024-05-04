@@ -38,6 +38,10 @@ class ProfilePageContent(Content):
         self.left_frame = None
         self.right_frame = None
 
+    def setup_ui(self):
+        # TODO: To be adapted
+        pass
+
     def update_ui_with_new_data(self, data):
         pass
 
